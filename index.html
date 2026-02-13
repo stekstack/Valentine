@@ -52,7 +52,7 @@
       justify-content: center;
       gap: 14px;
       padding-top: 8px;
-      min-height: 110px; /* room for the escaping No button */
+      min-height: 140px; /* room for the escaping No button (mobile) */
     }
 
     button {
@@ -84,9 +84,11 @@
       color: #fff;
       font-weight: 650;
       box-shadow: 0 10px 18px rgba(0,0,0,0.14);
-      left: 50%;
-      top: 50%;
-      transform: translate(120px, 30px);
+      z-index: 2;
+      /* Start somewhere visible on small screens */
+      left: 72%;
+      top: 60%;
+      transform: translate(-50%, -50%);
     }
 
     .hint {
@@ -134,12 +136,15 @@
       const a = arena.getBoundingClientRect();
       const b = noBtn.getBoundingClientRect();
 
-      // Convert current viewport position -> arena-local coords
-      const left = (b.left - a.left);
-      const top = (b.top - a.top);
+      // Place the button somewhere visible and not overlapping the YES button.
+      // Convert this target into arena-local pixel coordinates.
+      const targetLeft = a.width * 0.72 - b.width / 2;
+      const targetTop = a.height * 0.60 - b.height / 2;
 
-      noBtn.style.left = left + 'px';
-      noBtn.style.top = top + 'px';
+      // After initial placement, we stop using transforms so movement math is consistent.
+      noBtn.style.transform = 'none';
+      noBtn.style.left = clamp(targetLeft, EDGE_PADDING, a.width - b.width - EDGE_PADDING) + 'px';
+      noBtn.style.top = clamp(targetTop, EDGE_PADDING, a.height - b.height - EDGE_PADDING) + 'px';
     }
 
     function clamp(n, min, max) {
