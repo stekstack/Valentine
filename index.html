@@ -1,93 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Valentine Question</title>
-<style>
-  body {
-    margin: 0;
-    font-family: system-ui, Arial, sans-serif;
-    background: linear-gradient(135deg,#ff7eb3,#ff758c);
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Valentine Question</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, Arial, sans-serif;
+      background: linear-gradient(135deg, #ff7eb3, #ff758c);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
 
-  .container {
-    text-align: center;
-    color: white;
-  }
+    .container {
+      text-align: center;
+      color: #fff;
+      padding: 20px;
+    }
 
-  h1 {
-    font-size: clamp(1.8rem,5vw,3rem);
-    margin-bottom: 40px;
-  }
+    h1 {
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      margin: 0 0 36px;
+      line-height: 1.15;
+    }
 
-  #yesBtn {
-    font-size: clamp(1.1rem,4vw,1.8rem);
-    padding: 16px 38px;
-    border: none;
-    border-radius: 12px;
-    background: #28c76f;
-    color: white;
-    cursor: pointer;
-    margin-right: 20px;
-  }
+    #yesBtn {
+      font-size: clamp(1.1rem, 4vw, 1.8rem);
+      padding: 16px 38px;
+      border: none;
+      border-radius: 12px;
+      background: #28c76f;
+      color: white;
+      cursor: pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-  /* tiny evil no button */
-  #noBtn {
-    position: fixed;
-    font-size: 10px;
-    padding: 4px 7px;
-    border-radius: 10px;
-    border: none;
-    background: #ff4d4f;
-    color: white;
-    cursor: pointer;
-    z-index: 999;
-    pointer-events: none; /* prevents tapping entirely */
-  }
-</style>
+    /* tiny evil no button */
+    #noBtn {
+      position: fixed;
+      left: 20px;
+      top: 20px;
+      font-size: 10px;
+      padding: 4px 7px;
+      border-radius: 999px;
+      border: none;
+      background: #ff4d4f;
+      color: white;
+      cursor: pointer;
+      z-index: 9999;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: none; /* so touch doesn't scroll/zoom when trying */
+      user-select: none;
+    }
+  </style>
 </head>
 <body>
-<div class="container">
-  <h1>Emma will you be my valentine?</h1>
-  <button id="yesBtn" onclick="alert('Good choice 😌❤️')">YES</button>
-</div>
+  <div class="container">
+    <h1>Emma will you be my valentine?</h1>
+    <button id="yesBtn" type="button">YES</button>
+  </div>
 
-<button id="noBtn">no</button>
+  <button id="noBtn" type="button">no</button>
 
-<script>
-const noBtn = document.getElementById('noBtn');
+  <script>
+    const yesBtn = document.getElementById('yesBtn');
+    const noBtn = document.getElementById('noBtn');
 
-let x = Math.random() * (window.innerWidth - 60);
-let y = Math.random() * (window.innerHeight - 40);
+    yesBtn.addEventListener('click', () => {
+      alert('Good choice 😌❤️');
+    });
 
-let vx = 6 + Math.random()*6;  // speed X
-let vy = 6 + Math.random()*6;  // speed Y
+    // --- High-speed bouncing "No" ---
+    let x = Math.random() * (window.innerWidth - 40);
+    let y = Math.random() * (window.innerHeight - 30);
 
-function animate(){
-  x += vx;
-  y += vy;
+    // Start fast (px per frame). If you want even faster, increase these.
+    let vx = (Math.random() > 0.5 ? 1 : -1) * (10 + Math.random() * 10);
+    let vy = (Math.random() > 0.5 ? 1 : -1) * (10 + Math.random() * 10);
 
-  if(x <= 0 || x >= window.innerWidth - 40) vx *= -1;
-  if(y <= 0 || y >= window.innerHeight - 30) vy *= -1;
+    function step() {
+      const bw = noBtn.offsetWidth;
+      const bh = noBtn.offsetHeight;
+      const maxX = window.innerWidth - bw;
+      const maxY = window.innerHeight - bh;
 
-  noBtn.style.left = x + 'px';
-  noBtn.style.top = y + 'px';
+      x += vx;
+      y += vy;
 
-  requestAnimationFrame(animate);
-}
+      // Bounce off edges
+      if (x <= 0) { x = 0; vx *= -1; }
+      if (x >= maxX) { x = maxX; vx *= -1; }
+      if (y <= 0) { y = 0; vy *= -1; }
+      if (y >= maxY) { y = maxY; vy *= -1; }
 
-animate();
+      noBtn.style.left = x + 'px';
+      noBtn.style.top = y + 'px';
 
-window.addEventListener('resize',()=>{
-  x = Math.min(x, window.innerWidth-40);
-  y = Math.min(y, window.innerHeight-30);
-});
-</script>
+      requestAnimationFrame(step);
+    }
+
+    requestAnimationFrame(step);
+
+    // If someone somehow manages to tap it, make it instantly "escape".
+    function escapeNow(px, py) {
+      const bw = noBtn.offsetWidth;
+      const bh = noBtn.offsetHeight;
+      const maxX = Math.max(0, window.innerWidth - bw);
+      const maxY = Math.max(0, window.innerHeight - bh);
+
+      // Teleport far from the touch point
+      const candidates = [
+        { x: 10, y: 10 },
+        { x: maxX - 10, y: 10 },
+        { x: 10, y: maxY - 10 },
+        { x: maxX - 10, y: maxY - 10 },
+        { x: Math.random() * maxX, y: Math.random() * maxY }
+      ];
+
+      // Pick the farthest candidate from the touch point
+      let best = candidates[0];
+      let bestD = -1;
+      for (const c of candidates) {
+        const dx = (c.x + bw / 2) - px;
+        const dy = (c.y + bh / 2) - py;
+        const d = Math.hypot(dx, dy);
+        if (d > bestD) { bestD = d; best = c; }
+      }
+
+      x = Math.max(0, Math.min(best.x, maxX));
+      y = Math.max(0, Math.min(best.y, maxY));
+
+      // Also randomize direction so it feels alive
+      vx = (Math.random() > 0.5 ? 1 : -1) * (12 + Math.random() * 12);
+      vy = (Math.random() > 0.5 ? 1 : -1) * (12 + Math.random() * 12);
+    }
+
+    noBtn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      escapeNow(e.clientX, e.clientY);
+    }, { passive: false });
+
+    // Block "click" just in case
+    noBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    });
+
+    window.addEventListener('resize', () => {
+      const bw = noBtn.offsetWidth;
+      const bh = noBtn.offsetHeight;
+      x = Math.min(x, Math.max(0, window.innerWidth - bw));
+      y = Math.min(y, Math.max(0, window.innerHeight - bh));
+    });
+  </script>
 </body>
 </html>
