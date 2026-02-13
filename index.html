@@ -20,6 +20,31 @@
       text-align: center;
       color: #fff;
       padding: 20px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Hearts layer behind content */
+    .hearts {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .heart {
+      position: absolute;
+      bottom: -40px;
+      font-size: 18px;
+      opacity: 0.55;
+      animation: floatUp linear infinite;
+      filter: blur(0.1px);
+    }
+
+    @keyframes floatUp {
+      from { transform: translateY(0) scale(1); }
+      to { transform: translateY(-110vh) scale(1.15); }
     }
 
     h1 {
@@ -33,9 +58,14 @@
       height: auto;
       border-radius: 18px;
       box-shadow: 0 12px 30px rgba(0,0,0,0.25);
-      animation: puppyPlead 1.8s infinite ease-in-out;
+      animation: puppyBounce 2.6s infinite ease-in-out;
       margin: 0 auto 22px;
       display: block;
+    }
+
+    @keyframes puppyBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
     }
 
     @keyframes puppyPlead {
@@ -75,15 +105,32 @@
   </style>
 </head>
 <body>
+  <div class="hearts" id="hearts"></div>
   <div class="container">
     <h1>Emma, will you be my Valentine this Saturday?</h1>
-    <img class="puppy" src="puppy.png" alt="Cute puppy" />
+    <img class="puppy" src="puppy.png" alt="Cute puppy" onerror="this.style.display='none'" />
     <button id="yesBtn" type="button">YES</button>
   </div>
 
   <button id="noBtn" type="button">no</button>
 
   <script>
+    // Create subtle floating hearts behind everything
+    const heartsWrap = document.getElementById('hearts');
+    const heartCount = 16;
+    for (let i = 0; i < heartCount; i++) {
+      const s = document.createElement('div');
+      s.className = 'heart';
+      s.textContent = '❤';
+      s.style.left = Math.random() * 100 + 'vw';
+      s.style.animationDuration = (6 + Math.random() * 6) + 's';
+      s.style.animationDelay = (-Math.random() * 12) + 's';
+      s.style.fontSize = (12 + Math.random() * 14) + 'px';
+      s.style.opacity = (0.25 + Math.random() * 0.25).toFixed(2);
+      heartsWrap.appendChild(s);
+    }
+
+
     const yesBtn = document.getElementById('yesBtn');
     const noBtn = document.getElementById('noBtn');
 
