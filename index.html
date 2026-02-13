@@ -29,12 +29,16 @@
     }
 
     .puppy {
-      font-size: 42px;
-      animation: puppyBlink 2.2s infinite ease-in-out;
-      margin-bottom: 20px;
+      width: min(260px, 70vw);
+      height: auto;
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+      animation: puppyPlead 1.8s infinite ease-in-out;
+      margin: 0 auto 22px;
+      display: block;
     }
 
-    @keyframes puppyBlink {
+    @keyframes puppyPlead {
       0%,100% { transform: scale(1); }
       50% { transform: scale(1.15); }
     }
@@ -72,8 +76,8 @@
 </head>
 <body>
   <div class="container">
-    <h1>Emma, will you be my valentine this Saturday?</h1>
-    <div class="puppy">🥺🐶</div>
+    <h1>Emma, will you be my Valentine this Saturday?</h1>
+    <img class="puppy" src="puppy.png" alt="Cute puppy" />
     <button id="yesBtn" type="button">YES</button>
   </div>
 
