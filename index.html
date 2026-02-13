@@ -127,7 +127,7 @@
     // We measure pointer proximity and, if close enough, push the No button away.
     // Also keep the No button inside the arena bounds.
 
-    const MAGNET_RADIUS = 120; // px
+    const MAGNET_RADIUS = 150; // px (a bit larger for touch screens)
     const PUSH_MULT = 1.6;
     const EDGE_PADDING = 8;
 
@@ -210,8 +210,34 @@
     }, { passive: true });
 
     // On touch, the user might tap directly. Trigger a move on pointerdown too.
+    // On phones, a tap can register as a click before pointermove happens.
+    // So we intercept pointerdown, move the button immediately, and block the click.
     noBtn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Move away from the tap point immediately
       moveAwayFrom(e.clientX, e.clientY);
+
+      // Add a little random "panic" hop so it feels impossible to catch
+      const a = arena.getBoundingClientRect();
+      const bW = noBtn.offsetWidth;
+      const bH = noBtn.offsetHeight;
+      const maxX = a.width - bW - EDGE_PADDING;
+      const maxY = a.height - bH - EDGE_PADDING;
+
+      const hopLeft = EDGE_PADDING + Math.random() * (maxX - EDGE_PADDING);
+      const hopTop = EDGE_PADDING + Math.random() * (maxY - EDGE_PADDING);
+      noBtn.style.left = hopLeft + 'px';
+      noBtn.style.top = hopTop + 'px';
+    }, { passive: false });
+
+    // If a click still somehow fires, ignore it.
+    noBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    });
     }, { passive: true });
 
     // (Optional) If someone keyboard-tabs to No, it still becomes hard to click:
