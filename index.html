@@ -1,254 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Valentine Question</title>
-  <style>
-    :root {
-      --bg1: #ff7eb3;
-      --bg2: #ff758c;
-      --yes: #28c76f;
-      --no: #ff4d4f;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Valentine Question</title>
+<style>
+  body {
+    margin: 0;
+    font-family: system-ui, Arial, sans-serif;
+    background: linear-gradient(135deg,#ff7eb3,#ff758c);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
 
-    * { box-sizing: border-box; }
+  .container {
+    text-align: center;
+    color: white;
+  }
 
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, Helvetica, sans-serif;
-      background: linear-gradient(135deg, var(--bg1), var(--bg2));
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-      padding: 20px;
-    }
+  h1 {
+    font-size: clamp(1.8rem,5vw,3rem);
+    margin-bottom: 40px;
+  }
 
-    .card {
-      width: min(680px, 92vw);
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.25);
-      backdrop-filter: blur(8px);
-      border-radius: 22px;
-      padding: clamp(18px, 4vw, 34px);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.18);
-      color: #fff;
-      text-align: center;
-      position: relative;
-    }
+  #yesBtn {
+    font-size: clamp(1.1rem,4vw,1.8rem);
+    padding: 16px 38px;
+    border: none;
+    border-radius: 12px;
+    background: #28c76f;
+    color: white;
+    cursor: pointer;
+    margin-right: 20px;
+  }
 
-    h1 {
-      margin: 0 0 22px;
-      font-size: clamp(1.7rem, 5.5vw, 3rem);
-      line-height: 1.15;
-      letter-spacing: 0.2px;
-    }
-
-    .button-row {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      padding-top: 8px;
-      min-height: 140px; /* room for the escaping No button (mobile) */
-    }
-
-    button {
-      border: none;
-      cursor: pointer;
-      border-radius: 14px;
-      transition: transform 0.12s ease;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
-
-    button:active { transform: scale(0.98); }
-
-    #yesBtn {
-      font-size: clamp(1.1rem, 4.5vw, 1.8rem);
-      padding: clamp(14px, 3.5vw, 18px) clamp(26px, 8vw, 40px);
-      background: var(--yes);
-      color: #fff;
-      font-weight: 750;
-      box-shadow: 0 10px 22px rgba(0,0,0,0.16);
-    }
-
-    #noBtn {
-      position: absolute;
-      font-size: clamp(0.85rem, 3.4vw, 1rem);
-      padding: 10px 16px;
-      background: var(--no);
-      color: #fff;
-      font-weight: 650;
-      box-shadow: 0 10px 18px rgba(0,0,0,0.14);
-      z-index: 2;
-      /* Start somewhere visible on small screens */
-      left: 72%;
-      top: 60%;
-      transform: translate(-50%, -50%);
-    }
-
-    .hint {
-      margin-top: 18px;
-      opacity: 0.9;
-      font-size: 0.95rem;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      button { transition: none; }
-    }
-  </style>
+  /* tiny evil no button */
+  #noBtn {
+    position: fixed;
+    font-size: 10px;
+    padding: 4px 7px;
+    border-radius: 10px;
+    border: none;
+    background: #ff4d4f;
+    color: white;
+    cursor: pointer;
+    z-index: 999;
+    pointer-events: none; /* prevents tapping entirely */
+  }
+</style>
 </head>
 <body>
-  <div class="card" id="card">
-    <h1>Emma will you be my valentine?</h1>
+<div class="container">
+  <h1>Emma will you be my valentine?</h1>
+  <button id="yesBtn" onclick="alert('Good choice 😌❤️')">YES</button>
+</div>
 
-    <div class="button-row" id="arena">
-      <button id="yesBtn" type="button">YES</button>
-      <button id="noBtn" type="button">No</button>
-    </div>
+<button id="noBtn">no</button>
 
-    <div class="hint">(Try to press “No” 😌)</div>
-  </div>
+<script>
+const noBtn = document.getElementById('noBtn');
 
-  <script>
-    const yesBtn = document.getElementById('yesBtn');
-    const noBtn = document.getElementById('noBtn');
-    const arena = document.getElementById('arena');
+let x = Math.random() * (window.innerWidth - 60);
+let y = Math.random() * (window.innerHeight - 40);
 
-    yesBtn.addEventListener('click', () => {
-      alert('Good choice 😌❤️');
-    });
+let vx = 6 + Math.random()*6;  // speed X
+let vy = 6 + Math.random()*6;  // speed Y
 
-    // --- Mobile-friendly "magnet" logic (works with mouse + touch) ---
-    // We measure pointer proximity and, if close enough, push the No button away.
-    // Also keep the No button inside the arena bounds.
+function animate(){
+  x += vx;
+  y += vy;
 
-    const MAGNET_RADIUS = 150; // px (a bit larger for touch screens)
-    const PUSH_MULT = 1.6;
-    const EDGE_PADDING = 8;
+  if(x <= 0 || x >= window.innerWidth - 40) vx *= -1;
+  if(y <= 0 || y >= window.innerHeight - 30) vy *= -1;
 
-    // Store the button's position in px within the arena
-    function ensurePositionInitialized() {
-      const a = arena.getBoundingClientRect();
-      const b = noBtn.getBoundingClientRect();
+  noBtn.style.left = x + 'px';
+  noBtn.style.top = y + 'px';
 
-      // Place the button somewhere visible and not overlapping the YES button.
-      // Convert this target into arena-local pixel coordinates.
-      const targetLeft = a.width * 0.72 - b.width / 2;
-      const targetTop = a.height * 0.60 - b.height / 2;
+  requestAnimationFrame(animate);
+}
 
-      // After initial placement, we stop using transforms so movement math is consistent.
-      noBtn.style.transform = 'none';
-      noBtn.style.left = clamp(targetLeft, EDGE_PADDING, a.width - b.width - EDGE_PADDING) + 'px';
-      noBtn.style.top = clamp(targetTop, EDGE_PADDING, a.height - b.height - EDGE_PADDING) + 'px';
-    }
+animate();
 
-    function clamp(n, min, max) {
-      return Math.max(min, Math.min(max, n));
-    }
-
-    function moveAwayFrom(pointerX, pointerY) {
-      const a = arena.getBoundingClientRect();
-
-      // No button center
-      const b = noBtn.getBoundingClientRect();
-      const cx = b.left + b.width / 2;
-      const cy = b.top + b.height / 2;
-
-      const dx = pointerX - cx;
-      const dy = pointerY - cy;
-      const dist = Math.hypot(dx, dy);
-
-      if (dist > MAGNET_RADIUS) return;
-
-      // Current position inside arena
-      const currentLeft = parseFloat(noBtn.style.left || '0');
-      const currentTop = parseFloat(noBtn.style.top || '0');
-
-      // Push away (opposite direction of pointer)
-      // Normalize to avoid crazy jumps when pointer is right on the button
-      const safeDist = Math.max(dist, 1);
-      const nx = dx / safeDist;
-      const ny = dy / safeDist;
-
-      const newLeft = currentLeft - nx * (MAGNET_RADIUS - dist) * PUSH_MULT;
-      const newTop = currentTop - ny * (MAGNET_RADIUS - dist) * PUSH_MULT;
-
-      // Clamp to keep inside arena
-      const maxLeft = a.width - b.width - EDGE_PADDING;
-      const maxTop = a.height - b.height - EDGE_PADDING;
-
-      noBtn.style.left = clamp(newLeft, EDGE_PADDING, maxLeft) + 'px';
-      noBtn.style.top = clamp(newTop, EDGE_PADDING, maxTop) + 'px';
-    }
-
-    // Initialize after layout
-    window.addEventListener('load', () => {
-      ensurePositionInitialized();
-
-      // If resized (rotation), keep the No button in-bounds
-      window.addEventListener('resize', () => {
-        const a = arena.getBoundingClientRect();
-        const b = noBtn.getBoundingClientRect();
-
-        const left = parseFloat(noBtn.style.left || '0');
-        const top = parseFloat(noBtn.style.top || '0');
-        const maxLeft = a.width - b.width - EDGE_PADDING;
-        const maxTop = a.height - b.height - EDGE_PADDING;
-        noBtn.style.left = clamp(left, EDGE_PADDING, maxLeft) + 'px';
-        noBtn.style.top = clamp(top, EDGE_PADDING, maxTop) + 'px';
-      }, { passive: true });
-    });
-
-    // Pointer support (mouse + touch + pen)
-    arena.addEventListener('pointermove', (e) => {
-      moveAwayFrom(e.clientX, e.clientY);
-    }, { passive: true });
-
-    // On touch, the user might tap directly. Trigger a move on pointerdown too.
-    // On phones, a tap can register as a click before pointermove happens.
-    // So we intercept pointerdown, move the button immediately, and block the click.
-    noBtn.addEventListener('pointerdown', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      // Move away from the tap point immediately
-      moveAwayFrom(e.clientX, e.clientY);
-
-      // Add a little random "panic" hop so it feels impossible to catch
-      const a = arena.getBoundingClientRect();
-      const bW = noBtn.offsetWidth;
-      const bH = noBtn.offsetHeight;
-      const maxX = a.width - bW - EDGE_PADDING;
-      const maxY = a.height - bH - EDGE_PADDING;
-
-      const hopLeft = EDGE_PADDING + Math.random() * (maxX - EDGE_PADDING);
-      const hopTop = EDGE_PADDING + Math.random() * (maxY - EDGE_PADDING);
-      noBtn.style.left = hopLeft + 'px';
-      noBtn.style.top = hopTop + 'px';
-    }, { passive: false });
-
-    // If a click still somehow fires, ignore it.
-    noBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    });
-    }, { passive: true });
-
-    // (Optional) If someone keyboard-tabs to No, it still becomes hard to click:
-    noBtn.addEventListener('focus', () => {
-      const a = arena.getBoundingClientRect();
-      // Nudge it randomly within bounds
-      const maxX = a.width - noBtn.offsetWidth - EDGE_PADDING;
-      const maxY = a.height - noBtn.offsetHeight - EDGE_PADDING;
-      noBtn.style.left = (EDGE_PADDING + Math.random() * (maxX - EDGE_PADDING)) + 'px';
-      noBtn.style.top = (EDGE_PADDING + Math.random() * (maxY - EDGE_PADDING)) + 'px';
-    });
-  </script>
+window.addEventListener('resize',()=>{
+  x = Math.min(x, window.innerWidth-40);
+  y = Math.min(y, window.innerHeight-30);
+});
+</script>
 </body>
 </html>
